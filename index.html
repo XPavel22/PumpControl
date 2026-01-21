@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление насосом</title>
+    <style>
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a2b4d;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .network-access-link {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .network-access-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .network-access-link a:hover {
+            text-decoration: underline;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            background-color: #f7f7f7;
+        }
+
+        .tab-button.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .conditional-group {
+            margin-left: 20px;
+            padding-top: 10px;
+            border-left: 2px solid #eee;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status-display {
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .sensor-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #495057;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            .container {
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+
+        .about-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.about-icon:hover {
+    color: #007bff;
+}
+
+.modal {
+
+    display: flex;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: opacity 0.3s ease;
+}
+
+.modal.modal-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s;
+    overflow-y: auto;
+}
+
+.modal-close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px;
+    font-family: sans-serif;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: #000;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.9);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s;
+    overflow-y: auto;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Панель управления</h1>
+
+        <span class="about-icon" onclick="openModal()">ⓘ</span>
+        <div class="network-access-link">
+            Доступ из сети: <a href="#" id="topMdnsLink" target="_blank"></a>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('wifi')">WiFi</button>
+            <button class="tab-button" onclick="showTab('control')">Управление</button>
+        </div>
+
+        <div id="wifi" class="tab-content active">
+
+            <div class="form-group">
+                <label>Режим работы:</label>
+                <div class="checkbox-group">
+                    <input type="radio" name="wifiMode" id="modeClient" value="false" onchange="updateGlobalSetting('isAP', false); toggleWifiMode()">
+                    <label for="modeClient">Клиент</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="radio" name="wifiMode" id="modeAP" value="true" onchange="updateGlobalSetting('isAP', true); toggleWifiMode()">
+                    <label for="modeAP">Точка доступа</label>
+                </div>
+            </div>
+
+            <div id="clientSettings">
+                <div class="form-group">
+                    <label for="ssid">Название сети (SSID):</label>
+                    <input type="text" id="ssid" onchange="updateGlobalSetting('networkSettings.0.ssid', this.value)">
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="text" id="password" onchange="updateGlobalSetting('networkSettings.0.password', this.value)">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="useStaticIP" onchange="updateGlobalSetting('networkSettings.0.useStaticIP', this.checked); toggleStaticIpFields()">
+                        <label for="useStaticIP">Использовать статический IP-адрес</label>
+                    </div>
+                </div>
+                <div id="staticIpFields" class="conditional-group" style="display: none;">
+                    <div class="form-group">
+                        <label for="staticIP">IP-адрес:</label>
+                        <input type="text" id="staticIP" onchange="updateGlobalSetting('networkSettings.0.staticIP', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label for="staticGateway">Шлюз:</label>
+                        <input type="text" id="staticGateway" onchange="updateGlobalSetting('networkSettings.0.staticGateway', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label for="staticSubnet">Маска подсети:</label>
+                        <input type="text" id="staticSubnet" onchange="updateGlobalSetting('networkSettings.0.staticSubnet', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label for="staticDNS">DNS:</label>
+                        <input type="text" id="staticDNS" onchange="updateGlobalSetting('networkSettings.0.staticDNS', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <div id="apSettings" style="display: none;">
+                <div class="form-group">
+                    <label for="ssidAP">Имя точки доступа (SSID):</label>
+                    <input type="text" id="ssidAP" onchange="updateGlobalSetting('ssidAP', this.value)">
+                </div>
+                <div class="form-group">
+                    <label for="passwordAP">Пароль точки доступа:</label>
+                    <input type="text" id="passwordAP" onchange="updateGlobalSetting('passwordAP', this.value)">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveSettings()">Сохранить настройки Wi-Fi</button>
+        </div>
+
+        <div id="control" class="tab-content">
+            <div class="button-group">
+                <button class="btn btn-success" id="btnPumpOn" onclick="setPumpState(true)">Вкл</button>
+                <button class="btn btn-danger" id="btnPumpOff" onclick="setPumpState(false)">Выкл</button>
+                <button class="btn btn-primary" id="btnResetManual" onclick="resetManualMode()">↺</button>
+            </div>
+            <div class="status-display" id="statusDisplay">
+
+            </div>
+
+            <div class="sensor-display" id="sensorDisplay">
+                Расстояние: -- см
+            </div>
+
+            <div class="form-group">
+                <label for="minTrigger">Минимальное значение (вкл насоса, см):</label>
+                <input type="number" id="minTrigger" step="0.1" onchange="updateGlobalSetting('control.minTrigger', this.value)">
+            </div>
+            <div class="form-group">
+                <label for="maxTrigger">Максимальное значение (выкл насоса, см):</label>
+                <input type="number" id="maxTrigger" step="0.1" onchange="updateGlobalSetting('control.maxTrigger', this.value)">
+            </div>
+
+            <button class="btn btn-primary" onclick="saveSettings()">Сохранить настройки управления</button>
+        </div>
+    </div>
+
+     <div id="aboutModal" class="modal">
+
+        <div class="modal-overlay" onclick="closeModal()"></div>
+
+        <div class="modal-content">
+
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div id="aboutContent">
+            <h2>О программе</h2>
+            <p><strong>Программа управления насосом откачки воды</strong></p>
+            <p>Долгополов Павел</p>
+            <p>Год: 2025</p>
+            <p><a href="mailto:dl.pavel@mail.ru">dl.pavel@mail.ru</a></p>
+        </div>
+        </div>
+
+            <input type="file" style="display: none;" id="secretFileInput">
+
+    </div>
+
+    <script>
+
+        let globalSettings = {};
+
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function toggleWifiMode() {
+            const isAPMode = document.getElementById('modeAP').checked;
+            document.getElementById('clientSettings').style.display = isAPMode ? 'none' : 'block';
+            document.getElementById('apSettings').style.display = isAPMode ? 'block' : 'none';
+        }
+
+        function toggleStaticIpFields() {
+            const useStatic = document.getElementById('useStaticIP').checked;
+            document.getElementById('staticIpFields').style.display = useStatic ? 'block' : 'none';
+        }
+
+        function loadSettings() {
+            fetch('/getAllSettings')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Loaded settings from server:', data);
+                    globalSettings = data;
+                    populateForm();
+                    updateMdnsLink();
+                })
+                .catch(error => console.error('Error loading settings:', error));
+        }
+
+        function populateForm() {
+
+            document.getElementById(globalSettings.isAP ? 'modeAP' : 'modeClient').checked = true;
+            toggleWifiMode();
+
+            if (globalSettings.networkSettings && globalSettings.networkSettings.length > 0) {
+                const net = globalSettings.networkSettings[0];
+                document.getElementById('ssid').value = net.ssid || '';
+                document.getElementById('password').value = net.password || '';
+                document.getElementById('useStaticIP').checked = net.useStaticIP || false;
+                toggleStaticIpFields();
+                document.getElementById('staticIP').value = net.staticIP || '';
+                document.getElementById('staticGateway').value = net.staticGateway || '';
+                document.getElementById('staticSubnet').value = net.staticSubnet || '';
+                document.getElementById('staticDNS').value = net.staticDNS || '';
+            }
+
+            document.getElementById('ssidAP').value = globalSettings.ssidAP || '';
+            document.getElementById('passwordAP').value = globalSettings.passwordAP || '';
+
+            document.getElementById('minTrigger').value = globalSettings.control.minTrigger || 0;
+            document.getElementById('maxTrigger').value = globalSettings.control.maxTrigger || 0;
+        }
+
+        function updateGlobalSetting(path, value) {
+            const keys = path.split('.');
+            let current = globalSettings;
+
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!current[keys[i]]) {
+                    current[keys[i]] = {};
+                }
+                current = current[keys[i]];
+            }
+
+            if (path === 'control.minTrigger' || path === 'control.maxTrigger') {
+                value = parseFloat(value);
+            }
+
+            current[keys[keys.length - 1]] = value;
+            console.log('Updated globalSettings:', globalSettings);
+
+            if (path === 'mDNS') {
+                updateMdnsLink();
+            }
+        }
+
+        function updateMdnsLink() {
+            const topMdnsLink = document.getElementById('topMdnsLink');
+
+            if (globalSettings.mDNS) {
+                const mDnsUrl = `http://${globalSettings.mDNS}.local`;
+
+                if (topMdnsLink) {
+                    topMdnsLink.href = mDnsUrl;
+                    topMdnsLink.innerText = mDnsUrl;
+                }
+            }
+        }
+
+  function saveSettings() {
+    const isAPMode = globalSettings.isAP;
+
+    if (isAPMode) {
+
+        const ssidAP = document.getElementById('ssidAP').value.trim();
+        if (ssidAP === '') {
+            alert('Ошибка: Имя точки доступа (SSID) не может быть пустым.');
+            document.getElementById('ssidAP').focus();
+            return;
+        }
+        globalSettings.ssidAP = ssidAP;
+
+        const passwordAP = document.getElementById('passwordAP').value.trim();
+        if (passwordAP.length > 0) {
+            if (passwordAP.length < 8) {
+                alert('Ошибка: Пароль точки доступа должен содержать не менее 8 символов.');
+                document.getElementById('passwordAP').focus();
+                document.getElementById('passwordAP').select();
+                return;
+            }
+        }
+        globalSettings.passwordAP = passwordAP;
+
+    } else {
+
+        const ssid = document.getElementById('ssid').value.trim();
+        if (ssid === '') {
+            alert('Ошибка: Название сети (SSID) не может быть пустым.');
+            document.getElementById('ssid').focus();
+            return;
+        }
+        globalSettings.networkSettings[0].ssid = ssid;
+
+        const password = document.getElementById('password').value.trim();
+        if (password.length > 0) {
+            if (password.length < 8) {
+                alert('Ошибка: Пароль Wi-Fi должен содержать не менее 8 символов.');
+                document.getElementById('password').focus();
+                document.getElementById('password').select();
+                return;
+            }
+        }
+        globalSettings.networkSettings[0].password = password;
+
+        const useStaticIP = document.getElementById('useStaticIP').checked;
+        globalSettings.networkSettings[0].useStaticIP = useStaticIP;
+
+        if (useStaticIP) {
+            const staticIP = document.getElementById('staticIP').value.trim();
+            const staticGateway = document.getElementById('staticGateway').value.trim();
+            const staticSubnet = document.getElementById('staticSubnet').value.trim();
+
+            if (staticIP === '') {
+                alert('Ошибка: Поле IP-адрес не может быть пустым.');
+                document.getElementById('staticIP').focus();
+                return;
+            }
+            if (staticGateway === '') {
+                alert('Ошибка: Поле Шлюз не может быть пустым.');
+                document.getElementById('staticGateway').focus();
+                return;
+            }
+            if (staticSubnet === '') {
+                alert('Ошибка: Поле Маска подсети не может быть пустым.');
+                document.getElementById('staticSubnet').focus();
+                return;
+            }
+
+            globalSettings.networkSettings[0].staticIP = staticIP;
+            globalSettings.networkSettings[0].staticGateway = staticGateway;
+            globalSettings.networkSettings[0].staticSubnet = staticSubnet;
+            globalSettings.networkSettings[0].staticDNS = document.getElementById('staticDNS').value.trim();
+        }
+    }
+
+    const formData = new FormData();
+    formData.append("dataSettings", JSON.stringify(globalSettings));
+
+    fetch('/saveSettings', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Настройки сохранены!');
+
+        } else {
+            alert('Ошибка сохранения: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error saving settings:', error));
+}
+
+  function updateLiveData() {
+    fetch('/getLiveData')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            updateMdnsLink();
+            document.getElementById('topMdnsLink').style.color = '';
+
+            document.getElementById('sensorDisplay').innerText = `Расстояние: ${data.currentDistance.toFixed(1)} см`;
+            updateControlStatus(data);
+        })
+        .catch(error => {
+
+            const mdnsLink = document.getElementById('topMdnsLink');
+
+            mdnsLink.innerText = 'Соединение с устройством потеряно';
+            mdnsLink.href = '#';
+            mdnsLink.style.color = 'red';
+        });
+}
+
+        function updateControlStatus(data) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            const btnOn = document.getElementById('btnPumpOn');
+            const btnOff = document.getElementById('btnPumpOff');
+
+            let statusText = '';
+            if (data.isErrorState) {
+                statusText = 'ОШИБКА: Датчик вне диапазона!';
+                statusDisplay.style.color = 'red';
+            } else {
+                statusDisplay.style.color = '#495057';
+                statusText += data.manualMode_pump ? 'Ручной режим' : 'Автоматический режим';
+                statusText += ' | ';
+                statusText += data.pumpState ? 'Насос ВКЛ' : 'Насос ВЫКЛ';
+            }
+            statusDisplay.innerText = statusText;
+
+        }
+
+        function setPumpState(isOn) {
+            fetch(`/setPump?state=${isOn ? 'on' : 'off'}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        alert('Не удалось изменить состояние насоса: ' + data.message);
+                    }
+                    updateLiveData();
+                })
+                .catch(error => console.error('Error setting pump state:', error));
+        }
+
+        function resetManualMode() {
+            fetch('/resetManualMode')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        alert('Не удалось сбросить режим: ' + data.message);
+                    }
+                    updateLiveData();
+                })
+                .catch(error => console.error('Error resetting manual mode:', error));
+        }
+
+const modal = document.getElementById('aboutModal');
+const aboutContent = document.getElementById('aboutContent');
+const secretFileInput = document.getElementById('secretFileInput');
+
+let tapCount = 0;
+let tapTimeout;
+
+function handleModalClick(event) {
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+function openModal() {
+    modal.classList.add('modal-open');
+    modal.addEventListener('click', handleModalClick);
+
+    tapCount = 0;
+    aboutContent.style.display = 'block';
+    secretFileInput.value = '';
+}
+
+function closeModal() {
+    modal.classList.remove('modal-open');
+
+    setTimeout(() => {
+        modal.removeEventListener('click', handleModalClick);
+    }, 100);
+}
+
+secretFileInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+
+        return;
+    }
+
+    console.log("Файл выбран:", file.name);
+
+    uploadFile(file);
+});
+
+aboutContent.addEventListener('click', function(event) {
+    if (event.target.tagName === 'A') return;
+
+    tapCount++;
+    clearTimeout(tapTimeout);
+
+    if (tapCount >= 5) {
+        console.log("Secret upload mode activated!");
+        tapCount = 0;
+
+        secretFileInput.click();
+    } else {
+        tapTimeout = setTimeout(() => { tapCount = 0; }, 2000);
+    }
+});
+
+function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    console.log("Загрузка файла:", file.name);
+    alert(`Загрузка файла "${file.name}" началась...`);
+
+    fetch('/uploadFile', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Ошибка сервера: ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(() => {
+
+        if (file.name.toLowerCase().endsWith('.bin')) {
+            alert("Прошивка принята. Устройство будет перезагружено.");
+
+        } else {
+            alert("Файл успешно загружен!");
+            closeModal();
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert("Ошибка загрузки: " + error.message);
+    });
+}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            setInterval(updateLiveData, 1000);
+        });
+
+    </script>
+</body>
+</html>
